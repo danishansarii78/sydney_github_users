@@ -2,99 +2,83 @@ import requests
 import csv
 import os
 
-# Set up API constants
-GITHUB_API_URL = "https://api.github.com"
-HEADERS = {"Authorization": "Bearer YOUR_GITHUB_TOKEN"}  # Replace with your GitHub token
+# Use your GitHub token here
+GITHUB_TOKEN = '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'
+HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
+BASE_URL = "https://api.github.com"
 
-# Define output CSV filenames
-USERS_CSV = "users.csv"
-REPOS_CSV = "repositories.csv"
-
-# Step 1: Fetch users based in Sydney with over 100 followers
-def fetch_users(location="Sydney", min_followers=100):
-    url = f"{GITHUB_API_URL}/search/users?q=location:{location}+followers:>{min_followers}"
+# Step 4.1: Define functions to get users and repositories
+def fetch_users():
+    url = f"{BASE_URL}/search/users?q=location:Sydney+followers:>100"
     response = requests.get(url, headers=HEADERS)
-    response.raise_for_status()  # Ensure we handle errors
-    return response.json().get("items", [])
+    response.raise_for_status()  # Ensure we stop if there’s a problem
+    return response.json().get('items', [])
 
-# Step 2: Fetch repositories for each user
-def fetch_repositories(username):
-    url = f"{GITHUB_API_URL}/users/{username}/repos"
+def fetch_user_details(login):
+    url = f"{BASE_URL}/users/{login}"
     response = requests.get(url, headers=HEADERS)
     response.raise_for_status()
     return response.json()
 
-# Step 3: Write data to CSV
-def write_users_csv(users):
-    with open(USERS_CSV, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(["login", "id", "node_id", "avatar_url", "gravatar_id", "url", "html_url", "followers_url", "following_url", "gists_url", "starred_url", "subscriptions_url", "organizations_url", "repos_url", "events_url", "received_events_url", "type", "site_admin", "score"])
-        for user in users:
-            writer.writerow([
-                user.get("login", ""),
-                user.get("id", ""),
-                user.get("node_id", ""),
-                user.get("avatar_url", ""),
-                user.get("gravatar_id", ""),
-                user.get("url", ""),
-                user.get("html_url", ""),
-                user.get("followers_url", ""),
-                user.get("following_url", ""),
-                user.get("gists_url", ""),
-                user.get("starred_url", ""),
-                user.get("subscriptions_url", ""),
-                user.get("organizations_url", ""),
-                user.get("repos_url", ""),
-                user.get("events_url", ""),
-                user.get("received_events_url", ""),
-                user.get("type", ""),
-                str(user.get("site_admin", "")).lower(),
-                user.get("score", ""),
-            ])
+def fetch_user_repos(login):
+    url = f"{BASE_URL}/users/{login}/repos?per_page=500"
+    response = requests.get(url, headers=HEADERS)
+    response.raise_for_status()
+    return response.json()
 
-def write_repositories_csv(repositories):
-    with open(REPOS_CSV, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(["id", "node_id", "name", "full_name", "private", "owner_login", "html_url", "description", "fork", "url", "created_at", "updated_at", "pushed_at", "homepage", "size", "stargazers_count", "watchers_count", "language", "forks_count", "open_issues_count", "license", "forks", "open_issues", "watchers", "default_branch"])
-        for repo in repositories:
-            writer.writerow([
-                repo.get("id", ""),
-                repo.get("node_id", ""),
-                repo.get("name", ""),
-                repo.get("full_name", ""),
-                str(repo.get("private", "")).lower(),
-                repo.get("owner", {}).get("login", ""),
-                repo.get("html_url", ""),
-                repo.get("description", ""),
-                str(repo.get("fork", "")).lower(),
-                repo.get("url", ""),
-                repo.get("created_at", ""),
-                repo.get("updated_at", ""),
-                repo.get("pushed_at", ""),
-                repo.get("homepage", ""),
-                repo.get("size", ""),
-                repo.get("stargazers_count", ""),
-                repo.get("watchers_count", ""),
-                repo.get("language", ""),
-                repo.get("forks_count", ""),
-                repo.get("open_issues_count", ""),
-                repo.get("license", {}).get("name", "") if repo.get("license") else "",
-                repo.get("forks", ""),
-                repo.get("open_issues", ""),
-                repo.get("watchers", ""),
-                repo.get("default_branch", ""),
-            ])
-
-# Main function to run the script
-def main():
-    users = fetch_users()
-    write_users_csv(users)
-    all_repositories = []
+# Step 4.2: Process and save users data
+def process_user_data(users):
+    user_data = []
     for user in users:
-        repos = fetch_repositories(user["login"])
-        all_repositories.extend(repos)
-    write_repositories_csv(all_repositories)
+        details = fetch_user_details(user['login'])
+        user_data.append({
+            'login': details.get('login', ''),
+            'name': details.get('name', ''),
+            'company': details.get('company', '').strip().lstrip('@').upper() if details.get('company') else '',
+            'location': details.get('location', ''),
+            'email': details.get('email', ''),
+            'hireable': details.get('hireable', ''),
+            'bio': details.get('bio', ''),
+            'public_repos': details.get('public_repos', 0),
+            'followers': details.get('followers', 0),
+            'following': details.get('following', 0),
+            'created_at': details.get('created_at', '')
+        })
+    return user_data
 
+# Step 4.3: Process and save repositories data
+def process_repositories_data(users):
+    repos_data = []
+    for user in users:
+        repos = fetch_user_repos(user['login'])
+        for repo in repos:
+            repos_data.append({
+                'login': user['login'],
+                'full_name': repo.get('full_name', ''),
+                'created_at': repo.get('created_at', ''),
+                'stargazers_count': repo.get('stargazers_count', 0),
+                'watchers_count': repo.get('watchers_count', 0),
+                'language': repo.get('language', ''),
+                'has_projects': repo.get('has_projects', False),
+                'has_wiki': repo.get('has_wiki', False),
+                'license_name': repo.get('license', {}).get('key', '')
+            })
+    return repos_data
+
+# Step 4.4: Write data to CSV files
+def write_to_csv(filename, data, fieldnames):
+    with open(filename, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(data)
+
+# Run the steps
 if __name__ == "__main__":
-    main()
+    # Get users with over 100 followers
+    users = fetch_users()
+    user_data = process_user_data(users)
+    write_to_csv("users.csv", user_data, fieldnames=user_data[0].keys())
 
+    # Get repository data
+    repos_data = process_repositories_data(user_data)
+    write_to_csv("repositories.csv", repos_data, fieldnames=repos_data[0].keys())
