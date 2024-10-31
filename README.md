@@ -29,3 +29,21 @@ Profile and Repository Data: For each user, profile details and a list of reposi
 CSV Output: The data was stored in two CSV files—one for user profiles (users.csv) and another for repositories (repositories.csv), to facilitate further analysis.
 Interesting Insights
 From the data analysis, we found that cloud and data science repositories had a strong presence among Sydney's top-followed GitHub users. Moreover, these users tend to collaborate frequently on trending open-source projects, particularly those involving Python and JavaScript.
+Recommendations for Developers
+Focus on Cloud and Data Science Projects: Developers seeking visibility within the Sydney tech community can benefit from contributing to repositories in these domains, which tend to attract higher follower counts and engagement.
+Leverage Open Source Contribution: Engaging in popular open-source projects helps developers connect with others in their field and increase their visibility on GitHub.
+Optimize Project Presentation: Use well-organized README files, consistent code documentation, and add licenses, as repositories with these features appear more frequently among high-follower users.
+Usage
+To replicate this data collection:
+
+Clone the repository and install required dependencies:
+bash
+Copy code
+git clone <repository-url>
+cd <repository-name>
+pip install -r requirements.txt
+Update GITHUB_TOKEN in scraper.py with a personal GitHub token.
+Run scraper.py to generate users.csv and repositories.csv files:
+bash
+Copy code
+python scraper.py
