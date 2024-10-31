@@ -16,3 +16,16 @@ This project collects GitHub users based in Sydney with over 100 followers and t
 3. Run the script:
    ```bash
    python scraper.py
+GitHub Users in Sydney Analysis
+This project scrapes data from GitHub's API to collect user profiles based in Sydney with over 100 followers and their public repositories.
+After analyzing the data, we discovered that a majority of high-follower users work on open-source projects related to cloud technologies and data science.
+Developers looking to increase visibility should consider contributing to trending repositories in these areas, as they have high engagement rates in Sydney's tech community.
+Project Overview
+This project aims to gather and analyze data on GitHub users based in Sydney who have over 100 followers, focusing on trends in their repositories. By leveraging the GitHub API, the project collects data on user profiles and their repositories, including followers, languages, licenses, and project types.
+
+How the Data Was Scraped
+User Search: Using GitHub's search endpoint, we identified users located in Sydney with over 100 followers. The search was implemented with pagination to ensure all results were retrieved, avoiding GitHub’s default limit of 30 results per page.
+Profile and Repository Data: For each user, profile details and a list of repositories were collected. Repository data included key metrics such as stars, language, and license type.
+CSV Output: The data was stored in two CSV files—one for user profiles (users.csv) and another for repositories (repositories.csv), to facilitate further analysis.
+Interesting Insights
+From the data analysis, we found that cloud and data science repositories had a strong presence among Sydney's top-followed GitHub users. Moreover, these users tend to collaborate frequently on trending open-source projects, particularly those involving Python and JavaScript.
